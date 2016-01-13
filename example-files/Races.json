@@ -1,0 +1,54 @@
+[
+  {
+    "key": "human",
+    "icon": 0,
+    "text": {
+      "description": "Humans possess exceptional drive\nand a great capacity to endure\nand expand, and as such\nare currently the dominant\nrace in the world.",
+      "noun": "Human",
+      "plural": "Humans",
+      "adjective": "Human"
+    },
+    "states": [
+      23
+    ]
+  },
+  {
+    "key": "elf",
+    "icon": 0,
+    "text": {
+      "description": "The long-lived elves are\nchildren of the natural world,\nsimilar in many superficial\nways to fey creatures,\nthough with key differences.\nWhile fey are truly linked to the\nflora and fauna of their\nhomes, existing as the nearly\nimmortal voices and guardians\nof the wilderness,\nelves are instead mortals who\nare in tune with the natural\nworld around them.",
+      "noun": "Elf",
+      "plural": "Elves",
+      "adjective": "Elven"
+    },
+    "states": [
+      24
+    ]
+  },
+  {
+    "key": "orc",
+    "icon": 0,
+    "text": {
+      "description": "Orcs are aggressive, callous, and domineering.\nBullies by nature, they respect strength\nand power as the highest virtues.\nOn an almost instinctive level,\norcs believe they are entitled to\nanything they want unless someone\nstronger can stop them from seizing it.",
+      "noun": "Orc",
+      "plural": "Orcs",
+      "adjective": "Orcish"
+    },
+    "states": [
+      25
+    ]
+  },
+  {
+    "key": "drow",
+    "icon": 0,
+    "text": {
+      "description": "Cruel and cunning, drow are a dark\nreflection of the elven race.\nAlso called dark elves, they dwell\ndeep underground in elaborate cities shaped\nfrom the rock of cyclopean caverns.",
+      "noun": "Drow",
+      "plural": "Drow",
+      "adjective": "Drow"
+    },
+    "states": [
+      26
+    ]
+  }
+]
