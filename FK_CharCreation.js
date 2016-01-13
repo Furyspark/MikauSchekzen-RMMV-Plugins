@@ -538,7 +538,7 @@ Scene_CharCreation.prototype.resetActorAppearance = function() {
   var appearance = $gameTemp.charCreation_FilterAppearances(filterObj)[0];
   this._actor.setFaceImage(appearance.value, appearance.faceIndex);
   this._actor.setCharacterImage(appearance.value, appearance.charIndex);
-  this._actor.setBattlerImage(appearance);
+  this._actor.setBattlerImage(appearance.value);
   if(this._baseHelpWindow) this._baseHelpWindow.refresh();
 };
 
