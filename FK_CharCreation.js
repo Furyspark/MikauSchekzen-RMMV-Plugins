@@ -2,7 +2,7 @@ var Fenrir = Fenrir || {};
 Fenrir.CharCreation = Fenrir.CharCreation || {};
 
 /*:
- * @plugindesc v0.2 Adds an elaborate character creation screen.
+ * @plugindesc v0.2a Adds an elaborate character creation screen.
  * @author FenrirKnight
  *
  * @param === Window ===
@@ -42,6 +42,16 @@ Fenrir.CharCreation = Fenrir.CharCreation || {};
  * @param Property help window height
  * @desc The height of the property help window(info on classes etc) as an eval
  * @default 480
+ *
+ * @param === Descriptions ===
+ *
+ * @param Male description
+ * @desc Description shown for male gender
+ * @default Your character will be male.
+ *
+ * @param Female description
+ * @desc Description shown for female gender
+ * @default Your character will be female.
  *
  * @help
  * ==============================================
@@ -177,6 +187,9 @@ Fenrir.CharCreation.propertyHelpX        = temp["Property help window x"];
 Fenrir.CharCreation.propertyHelpY        = temp["Property help window y"];
 Fenrir.CharCreation.propertyHelpWidth    = temp["Property help window width"];
 Fenrir.CharCreation.propertyHelpHeight   = temp["Property help window height"];
+
+Fenrir.CharCreation.maleDescription      = temp["Male description"];
+Fenrir.CharCreation.femaleDescription    = temp["Female description"];
 
 delete temp;
 
@@ -758,7 +771,17 @@ Window_CharCreation_Gender.prototype.initialize = function() {
  */
 Window_CharCreation_Gender.prototype.updateHelp = function() {
   Window_CharCreation_PropertyBase.prototype.updateHelp.call(this);
-  this._helpWindow.setText("Your character will be " + this._list[this.index()].symbol + ".");
+  var str = "";
+  switch(this.commandSymbol(this.index())) {
+    case "male":
+    str = Fenrir.CharCreation.maleDescription;
+    break;
+    case "female":
+    str = Fenrir.CharCreation.femaleDescription;
+    break;
+  }
+  str = str.replace(/(?:\\n)/g, "\n");
+  this._helpWindow.setText(str);
 };
 
 /**
