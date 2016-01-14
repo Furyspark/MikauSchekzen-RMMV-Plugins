@@ -34,7 +34,7 @@ Fenrir.ActorEventSprites = Fenrir.ActorEventSprites || {};
  * face.
  *
  * ----------------------------------------------
- * ActorImage x y
+ * ActorSprite x y
  * ----------------------------------------------
  *  Replace 'x' with the actor's ID as stated in RPG Maker's database.
  *  This will change the event with ID 'y' on the current map change
@@ -42,7 +42,7 @@ Fenrir.ActorEventSprites = Fenrir.ActorEventSprites || {};
  *  If 'y' isn't specified, this will change the calling event's image.
  *
  * ----------------------------------------------
- * PartyImage x y
+ * PartySprite x y
  * ----------------------------------------------
  *  Replace 'x' with the party member's index in the party(0 = leader)
  *  This will change the event with ID 'y' on the current map change
@@ -88,13 +88,13 @@ Game_Interpreter.prototype.pluginCommand = function(cmd, args) {
     var index = Number(args[0]);
     var actor = $gameParty.members()[actorId];
     $gameTemp._actorFace = { value: actor.faceName(), index: actor.faceIndex() };
-  } else if(cmd === "ActorImage") {
+  } else if(cmd === "ActorSprite") {
     var actorId = Number(args[0]);
     var actor = $gameActors.actor(actorId);
     var evId = this._eventId;
     if(args.length > 1) evId = Number(args[1]);
     if(actor) $gameMap.event(evId).setImage(actor.characterName(), actor.characterIndex());
-  } else if(cmd === "PartyImage") {
+  } else if(cmd === "PartySprite") {
     var index = Number(args[0]);
     var actor = $gameParty.members()[index];
     var evId = this._eventId;
