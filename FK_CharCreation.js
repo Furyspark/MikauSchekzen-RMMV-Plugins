@@ -2,8 +2,46 @@ var Fenrir = Fenrir || {};
 Fenrir.CharCreation = Fenrir.CharCreation || {};
 
 /*:
- * @plugindesc v0.1 Adds an elaborate character creation screen.
+ * @plugindesc v0.2 Adds an elaborate character creation screen.
  * @author FenrirKnight
+ *
+ * @param === Window ===
+ *
+ * @param Font size
+ * @desc The font size used globally in the character creation screen (as an eval)
+ * @default Window_Base.prototype.standardFontSize()
+ *
+ * @param Property window x
+ * @desc The x-position of the property window(choosing classes etc) as an eval
+ * @default Graphics.width / 2 - this.width - 120
+ *
+ * @param Property window y
+ * @desc The y-position of the property window(choosing classes etc) as an eval
+ * @default Graphics.height / 2 - this.height / 2
+ *
+ * @param Property window width
+ * @desc The width of the property window(choosing classes etc) as an eval
+ * @default 240
+ *
+ * @param Property window height
+ * @desc The height of the property window(choosing classes etc) as an eval
+ * @default 480
+ *
+ * @param Property help window x
+ * @desc The x-position of the property help window(info on classes etc) as an eval
+ * @default Graphics.width / 2 - 120
+ *
+ * @param Property help window y
+ * @desc The y-position of the property help window(info on classes etc) as an eval
+ * @default Graphics.height / 2 - this.height / 2
+ *
+ * @param Property help window width
+ * @desc The width of the property help window(info on classes etc) as an eval
+ * @default 480
+ *
+ * @param Property help window height
+ * @desc The height of the property help window(info on classes etc) as an eval
+ * @default 480
  *
  * @help
  * ==============================================
@@ -127,6 +165,20 @@ Fenrir.CharCreation = Fenrir.CharCreation || {};
  * Examples:   CharacterCreation 2
  */
 
+
+var temp = PluginManager.parameters("FK_CharCreation");
+
+Fenrir.CharCreation.fontSizeEval         = temp["Font size"];
+Fenrir.CharCreation.propertyX            = temp["Property window x"];
+Fenrir.CharCreation.propertyY            = temp["Property window y"];
+Fenrir.CharCreation.propertyWidth        = temp["Property window width"];
+Fenrir.CharCreation.propertyHeight       = temp["Property window height"];
+Fenrir.CharCreation.propertyHelpX        = temp["Property help window x"];
+Fenrir.CharCreation.propertyHelpY        = temp["Property help window y"];
+Fenrir.CharCreation.propertyHelpWidth    = temp["Property help window width"];
+Fenrir.CharCreation.propertyHelpHeight   = temp["Property help window height"];
+
+delete temp;
 
 
 Fenrir.CharCreation.Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
@@ -569,6 +621,14 @@ Window_CharCreation_Base.prototype.windowWidth = function() {
 };
 
 /**
+ * Font size
+ * @return (number) The font size
+ */
+Window_CharCreation_Base.prototype.standardFontSize = function() {
+  return eval(Fenrir.CharCreation.fontSizeEval);
+};
+
+/**
  * Window height
  * @return (number) The window's calculated height
  */
@@ -640,8 +700,8 @@ Window_CharCreation_PropertyBase.prototype.constructor = Window_CharCreation_Pro
  */
 Window_CharCreation_PropertyBase.prototype.initialize = function() {
   Window_Command.prototype.initialize.call(this, 0, 0);
-  this.x = Graphics.width / 2 - this.windowWidth() - 120;
-  this.y = Graphics.height / 2 - this.windowHeight() / 2;
+  this.x = eval(Fenrir.CharCreation.propertyX);
+  this.y = eval(Fenrir.CharCreation.propertyY);
 };
 
 /**
@@ -649,7 +709,7 @@ Window_CharCreation_PropertyBase.prototype.initialize = function() {
  * @return (number) The window's calculated width
  */
 Window_CharCreation_PropertyBase.prototype.windowWidth = function() {
-  return 240;
+  return eval(Fenrir.CharCreation.propertyWidth);
 };
 
 /**
@@ -657,7 +717,15 @@ Window_CharCreation_PropertyBase.prototype.windowWidth = function() {
  * @return (number) The window's calculated height
  */
 Window_CharCreation_PropertyBase.prototype.windowHeight = function() {
-  return 480;
+  return eval(Fenrir.CharCreation.propertyHeight);
+};
+
+/**
+ * Font size
+ * @return (number) The font size
+ */
+Window_CharCreation_PropertyBase.prototype.standardFontSize = function() {
+  return eval(Fenrir.CharCreation.fontSizeEval);
 };
 
 /**
@@ -974,11 +1042,19 @@ Window_CharCreation_PropertyHelp.prototype.constructor = Window_CharCreation_Pro
  * Constructor
  */
 Window_CharCreation_PropertyHelp.prototype.initialize = function() {
-  Window_Help.prototype.initialize.call(this, 20);
-  this.width = 480;
-  this.height = 480;
-  this.x = Graphics.width / 2 - 120;
-  this.y = Graphics.height / 2 - this.height / 2;
+  Window_Help.prototype.initialize.call(this, 40);
+  this.width = eval(Fenrir.CharCreation.propertyHelpWidth);
+  this.height = eval(Fenrir.CharCreation.propertyHelpHeight);
+  this.x = eval(Fenrir.CharCreation.propertyHelpX);
+  this.y = eval(Fenrir.CharCreation.propertyHelpY);
+};
+
+/**
+ * Font size
+ * @return (number) The font size
+ */
+Window_CharCreation_PropertyHelp.prototype.standardFontSize = function() {
+  return eval(Fenrir.CharCreation.fontSizeEval);
 };
 
 
@@ -1008,6 +1084,14 @@ Window_CharCreation_BaseHelp.prototype.refresh = function() {
     this.contents.clear();
     this.drawEverything();
   }
+};
+
+/**
+ * Font size
+ * @return (number) The font size
+ */
+Window_CharCreation_BaseHelp.prototype.standardFontSize = function() {
+  return eval(Fenrir.CharCreation.fontSizeEval);
 };
 
 /**
