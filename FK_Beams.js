@@ -14,6 +14,58 @@ Imported.FK_Beams = true;
  * @param Number of Beams
  * @desc Number of beams in this image (1 per column)
  * @default 2
+ *
+ * @help
+ * Adds beam, ray and thunder Bolt effects
+ * ===========================================================
+ * Script calls
+ * =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * FK.Beams.createBeam(key, beamType, xFrom, yFrom, xTo, yTo)
+ * -----------------------------------------------------------
+ * Creates a beam for the current scene to draw.
+ * Parameters: key (string) - Key to store the beam as
+ *             beamType (string) - Type of the beam, as
+ *                in Beams.json
+ *             xFrom, yFrom (numbers) - Origin of the beam
+ *             xTo, yTo (numbers) - Destination of the beam
+ *
+ * =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * FK.Beams.getBeam(key)
+ * -----------------------------------------------------------
+ * Parameters: key (string) - Key of the previously stored beam.
+ *
+ * Returns: Earlier-created beam (Sprite_Beam) or undefined
+ *
+ * ===========================================================
+ * Yanfly Battle Engine
+ * ===========================================================
+ *  If you have Yanfly's Battle Engine and at least Action
+ * Sequence Pack 3, you can use beam effects with skills and
+ * items.
+ *
+ * ===========================================================
+ * Action Sequences - Action List
+ * =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * BEAM: type, origin, destination
+ * -----------------------------------------------------------
+ *  Creates a beam from the origin to the destination.
+ * 'type' refers to the name of the beam as defined in
+ * Beams.json (capitals matter!).
+ *  'origin' and 'destination' are both targeting values,
+ * but differ a bit from the usual action sequences that use
+ * them in such a way.
+ * First off, there is the possibility to allow set points on
+ * the screen, by using:
+ *  POINT x y
+ * Secondly, there is the possibility to target battlers,
+ * using:
+ *  TARGET; FRONT CENTER
+ * Neither of these are case-sensitive, but you HAVE to
+ * specify the position of the battler to target.
+ * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * Usage Examples: beam: point 320 240, point 640 240
+ *                 beam: point 320 0, target; base
+ *                 beam: user; front middle, targets; middle
 */
 
 var FK = FK || {};
@@ -365,73 +417,75 @@ FK_Beam_Action.prototype.updateActionRewind = function() {
 // BattleManager
 //
 
-FK.Beams.BattleManager_processActionSequence = BattleManager.processActionSequence;
-BattleManager.processActionSequence = function(actionName, actionArgs) {
-  // BEAM
-  if(actionName === "BEAM") {
-    return this.actionBeam(actionArgs);
+if(Imported.YEP_BattleEngineCore && Imported.YEP_X_ActSeqPack3) {
+  FK.Beams.BattleManager_processActionSequence = BattleManager.processActionSequence;
+  BattleManager.processActionSequence = function(actionName, actionArgs) {
+    // BEAM
+    if(actionName === "BEAM") {
+      return this.actionBeam(actionArgs);
+    }
+    return FK.Beams.BattleManager_processActionSequence.call(this, actionName, actionArgs);
   }
-  return FK.Beams.BattleManager_processActionSequence.call(this, actionName, actionArgs);
-}
 
-BattleManager.actionBeam = function(actionArgs) {
-  var type = actionArgs[0];
-  var origin = actionArgs[1].toUpperCase();
-  var target = actionArgs[2].toUpperCase();
-  var checks = [origin, target];
-  var points = [[], []];
-  for(var a = 0;a < 2;a++) {
-    var check = checks[a];
-    if(check.match(/(?:POINT|POSITION|COORDINATE[S]?)[ ](\d+)[ ](\d+)/i)) {
-      var point = new Point(parseInt(RegExp.$1), parseInt(RegExp.$2));
-      points[a].push(point);
-    } else if(check.match(/(.*);[ ](.*)/i)) {
-      var targets = this.makeActionTargets(RegExp.$1.toUpperCase());
-      if(targets.length === 0) return false;
-      var targetType = RegExp.$2.toUpperCase();
-      for(var b = 0;b < targets.length;b++) {
-        var tar = [targets[b]];
-        var point = new Point(0, 0);
+  BattleManager.actionBeam = function(actionArgs) {
+    var type = actionArgs[0];
+    var origin = actionArgs[1].toUpperCase();
+    var target = actionArgs[2].toUpperCase();
+    var checks = [origin, target];
+    var points = [[], []];
+    for(var a = 0;a < 2;a++) {
+      var check = checks[a];
+      if(check.match(/(?:POINT|POSITION|COORDINATE[S]?)[ ](\d+)[ ](\d+)/i)) {
+        var point = new Point(parseInt(RegExp.$1), parseInt(RegExp.$2));
         points[a].push(point);
-        if(["FRONT BASE", "FRONT"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "FRONT");
-          point.y = this.targetPosY(tar, "BASE");
-        } else if(["BASE"].contains(type)) {
-          point.x = this.targetPosX(tar, "MIDDLE");
-          point.y = this.targetPosY(tar, "BASE");
-        } else if(["BACK BASE", "BACK"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "BACK");
-          point.y = this.targetPosY(tar, "BASE");
-        } else if(["FRONT CENTER", "FRONT MIDDLE"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "FRONT");
-          point.y = this.targetPosY(tar, "MIDDLE");
-        } else if(["CENTER", "MIDDLE"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "MIDDLE");
-          point.y = this.targetPosY(tar, "MIDDLE");
-        } else if(["BACK CENTER", "BACK MIDDLE"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "BACK");
-          point.y = this.targetPosY(tar, "MIDDLE");
-        } else if(["FRONT HEAD", "FRONT TOP"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "FRONT");
-          point.y = this.targetPosY(tar, "TOP");
-        } else if(["HEAD", "TOP"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "MIDDLE");
-          point.y = this.targetPosY(tar, "TOP");
-        } else if(["BACK HEAD", "BACK TOP"].contains(targetType)) {
-          point.x = this.targetPosX(tar, "BACK");
-          point.y = this.targetPosY(tar, "TOP");
-        } else {
-          return true;
+      } else if(check.match(/(.*);[ ](.*)/i)) {
+        var targets = this.makeActionTargets(RegExp.$1.toUpperCase());
+        if(targets.length === 0) return false;
+        var targetType = RegExp.$2.toUpperCase();
+        for(var b = 0;b < targets.length;b++) {
+          var tar = [targets[b]];
+          var point = new Point(0, 0);
+          points[a].push(point);
+          if(["FRONT BASE", "FRONT"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "FRONT");
+            point.y = this.targetPosY(tar, "BASE");
+          } else if(["BASE"].contains(type)) {
+            point.x = this.targetPosX(tar, "MIDDLE");
+            point.y = this.targetPosY(tar, "BASE");
+          } else if(["BACK BASE", "BACK"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "BACK");
+            point.y = this.targetPosY(tar, "BASE");
+          } else if(["FRONT CENTER", "FRONT MIDDLE"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "FRONT");
+            point.y = this.targetPosY(tar, "MIDDLE");
+          } else if(["CENTER", "MIDDLE"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "MIDDLE");
+            point.y = this.targetPosY(tar, "MIDDLE");
+          } else if(["BACK CENTER", "BACK MIDDLE"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "BACK");
+            point.y = this.targetPosY(tar, "MIDDLE");
+          } else if(["FRONT HEAD", "FRONT TOP"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "FRONT");
+            point.y = this.targetPosY(tar, "TOP");
+          } else if(["HEAD", "TOP"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "MIDDLE");
+            point.y = this.targetPosY(tar, "TOP");
+          } else if(["BACK HEAD", "BACK TOP"].contains(targetType)) {
+            point.x = this.targetPosX(tar, "BACK");
+            point.y = this.targetPosY(tar, "TOP");
+          } else {
+            return true;
+          }
         }
       }
     }
-  }
-  for(var a = 0;a < points[0].length;a++) {
-    var from = points[0][a];
-    for(var b = 0;b < points[1].length;b++) {
-      var to = points[1][b];
-      FK.Beams.createBeam(undefined, type, from.x, from.y, to.x, to.y);
+    for(var a = 0;a < points[0].length;a++) {
+      var from = points[0][a];
+      for(var b = 0;b < points[1].length;b++) {
+        var to = points[1][b];
+        FK.Beams.createBeam(undefined, type, from.x, from.y, to.x, to.y);
+      }
     }
+    return true;
   }
-  return true;
 }
