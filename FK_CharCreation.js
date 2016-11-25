@@ -178,15 +178,15 @@ Fenrir.CharCreation = Fenrir.CharCreation || {};
 
 var temp = PluginManager.parameters("FK_CharCreation");
 
-Fenrir.CharCreation.fontSizeEval         = temp["Font size"];
-Fenrir.CharCreation.propertyX            = temp["Property window x"];
-Fenrir.CharCreation.propertyY            = temp["Property window y"];
-Fenrir.CharCreation.propertyWidth        = temp["Property window width"];
-Fenrir.CharCreation.propertyHeight       = temp["Property window height"];
-Fenrir.CharCreation.propertyHelpX        = temp["Property help window x"];
-Fenrir.CharCreation.propertyHelpY        = temp["Property help window y"];
-Fenrir.CharCreation.propertyHelpWidth    = temp["Property help window width"];
-Fenrir.CharCreation.propertyHelpHeight   = temp["Property help window height"];
+Fenrir.CharCreation.fontSizeEval         = eval(temp["Font size"]);
+Fenrir.CharCreation.propertyX            = eval(temp["Property window x"]);
+Fenrir.CharCreation.propertyY            = eval(temp["Property window y"]);
+Fenrir.CharCreation.propertyWidth        = eval(temp["Property window width"]);
+Fenrir.CharCreation.propertyHeight       = eval(temp["Property window height"]);
+Fenrir.CharCreation.propertyHelpX        = eval(temp["Property help window x"]);
+Fenrir.CharCreation.propertyHelpY        = eval(temp["Property help window y"]);
+Fenrir.CharCreation.propertyHelpWidth    = eval(temp["Property help window width"]);
+Fenrir.CharCreation.propertyHelpHeight   = eval(temp["Property help window height"]);
 
 Fenrir.CharCreation.maleDescription      = temp["Male description"];
 Fenrir.CharCreation.femaleDescription    = temp["Female description"];
@@ -202,21 +202,25 @@ Fenrir.CharCreation.Game_Interpreter_pluginCommand = Game_Interpreter.prototype.
  */
 Game_Interpreter.prototype.pluginCommand = function(cmd, args) {
   Fenrir.CharCreation.Game_Interpreter_pluginCommand.call(this, cmd, args);
-  if(cmd === "CharacterCreation") {
-    $gameTemp._charCreationActor = Number(args[0]);
-    SceneManager.push(Scene_CharCreation);
-  }
-  else if(cmd === "CharacterCreationClass") {
-    $gameTemp._charCreationClasses.push(Number(args[0]));
-  }
-  else if(cmd === "CharacterCreationRace" && Fenrir.Races) {
-    $gameTemp._charCreationRaces.push(args[0]);
-  }
-  else if(cmd === "CharacterCreationDisable") {
-    $gameTemp._charCreationDisable.push(args[0]);
-  }
-  else if(cmd === "CharacterCreationAppearance") {
-    $gameTemp.charCreation_AddAppearance(args);
+  switch (cmd) {
+	case 'CharacterCreation':
+		$gameTemp._charCreationActor = Number(args[0]);
+		SceneManager.push(Scene_CharCreation);
+		break;
+	case 'CharacterCreationClass':
+		$gameTemp._charCreationClasses.push(Number(args[0]));
+		break;
+	case 'CharacterCreationRace':
+		if (Fenrir.Races) {
+			$gameTemp._charCreationRaces.push(args[0]);
+		}
+		break;
+	case 'CharacterCreationDisable':
+		$gameTemp._charCreationDisable.push(args[0]);
+		break;
+	case 'CharacterCreationAppearance':
+		$gameTemp.charCreation_AddAppearance(args);
+		break;
   }
 };
 
@@ -226,8 +230,8 @@ Game_Interpreter.prototype.pluginCommand = function(cmd, args) {
  */
 Fenrir.CharCreation.Game_Temp_initialize = Game_Temp.prototype.initialize;
 Game_Temp.prototype.initialize = function() {
-  Fenrir.CharCreation.Game_Temp_initialize.call(this);
-  this.charCreation_ClearData();
+	Fenrir.CharCreation.Game_Temp_initialize.call(this);
+	this.charCreation_ClearData();
 };
 
 /**
@@ -235,19 +239,21 @@ Game_Temp.prototype.initialize = function() {
  * @param (array) args - The arguments passed down by the plugin command
  */
 Game_Temp.prototype.charCreation_AddAppearance = function(args) {
-  var appearanceMatch = args[args.length-1].match(/<(.+)>/)[1];
+  var appearanceMatch = args[args.length - 1].match(/<(.+)>/)[1];
   var appearanceArr = appearanceMatch.split(":");
   var appearance = appearanceArr[0];
   var charIndex = appearanceArr.length > 1 ? appearanceArr[1] : 0;
   var faceIndex = appearanceArr.length > 2 ? appearanceArr[2] : charIndex;
   var filters = [];
 
-  for(var a = 0;a < args.length-1;a++) {
+  for(var a = 0; a < args.length - 1; a++) {
     var arg = args[a];
     var filterObj = this.charCreation_GetAppearanceFilter(arg);
-    if(filterObj) filters.push(filterObj);
+    if (filterObj) {
+		filters.push(filterObj);
+	}
   }
-  if(appearance) {
+  if (appearance) {
     this._charCreationAppearances.push({
       value: appearance,
       charIndex: charIndex,
@@ -268,15 +274,17 @@ Game_Temp.prototype.charCreation_GetAppearanceFilter = function(arg) {
   var matchRace = /<(?:RACE:(.+))>/i;
   var matchGender = /<(?:GENDER:(.+))>/i;
 
-  if(arg.match(matchRace)) {
+  if (arg.match(matchRace)) {
     filterObj.type = "race";
     filterObj.value = RegExp.$1;
-  } else if(arg.match(matchGender)) {
+  } else if (arg.match(matchGender)) {
     filterObj.type = "gender";
     filterObj.value = RegExp.$1;
   }
 
-  if(!filterObj.type) return null;
+  if (!filterObj.type) {
+	  return null;
+  }
   return filterObj;
 };
 
@@ -287,10 +295,10 @@ Game_Temp.prototype.charCreation_GetAppearanceFilter = function(arg) {
  */
 Game_Temp.prototype.charCreation_FilterAppearances = function(filterObj) {
   var result = [];
-  for(var a = 0;a < this._charCreationAppearances.length;a++) {
+  for(var a = 0; a < this._charCreationAppearances.length; a++) {
     var app = this._charCreationAppearances[a];
     var doAdd = true;
-    for(var b = 0;b < app.filters.length && doAdd;b++) {
+    for(var b = 0; b < app.filters.length && doAdd; b++) {
       var filter = app.filters[b];
       var counterFilter = filterObj[filter.type];
       if(counterFilter && filter.value != counterFilter) doAdd = false;
@@ -309,8 +317,12 @@ Game_Temp.prototype.charCreation_CreateActorFilter = function(actorId) {
   var actor = $gameActors.actor(actorId);
   var filterObj = {};
 
-  if(Fenrir.Gender) filterObj.gender = actor.gender();
-  if(Fenrir.Races) filterObj.race = actor.raceName();
+  if (Fenrir.Gender) {
+	  filterObj.gender = actor.gender();
+  }
+  if (Fenrir.Races) {
+	  filterObj.race = actor.raceName();
+  }
 
   return filterObj;
 };
@@ -331,7 +343,9 @@ Fenrir.CharCreation.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
  * Further loads the database
  */
 DataManager.isDatabaseLoaded = function() {
-  if(!Fenrir.CharCreation.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Fenrir.CharCreation.DataManager_isDatabaseLoaded.call(this)) {
+	  return false;
+  }
   this.processFenrirCharCreationNotetags1($dataClasses);
   return true;
 };
@@ -354,15 +368,15 @@ DataManager.processFenrirCharCreationNotetags1 = function(group) {
 
     var evalMode = "none";
 
-    for(var b = 0;b < notedata.length;b++) {
+    for(var b = 0; b < notedata.length; b++) {
       var line = notedata[b];
-      if(line.match(noteB)) {
+      if (line.match(noteB)) {
         obj._icon = Number(RegExp.$1);
-      } else if(line.match(noteA1)) {
+      } else if (line.match(noteA1)) {
         evalMode = "description";
-      } else if(line.match(noteA3)) {
+      } else if (line.match(noteA3)) {
         evalMode = "none";
-      } else if(evalMode === "description" && line.match(noteA2)) {
+      } else if (evalMode === "description" && line.match(noteA2)) {
         var txt = RegExp.$1;
         obj._description = obj._description + txt + "\n";
       }
@@ -404,9 +418,9 @@ Scene_CharCreation.prototype.start = function() {
  */
 Scene_CharCreation.prototype.preloadGraphics = function() {
   var arr = $gameTemp._charCreationAppearances;
-  for(var a = 0;a < arr.length;a++) {
+  for(var a = 0; a < arr.length; a++) {
     var obj = arr[a];
-    if(obj.value) {
+    if (obj.value) {
       ImageManager.loadCharacter(obj.value);
       ImageManager.loadFace(obj.value);
     }
@@ -421,23 +435,27 @@ Scene_CharCreation.prototype.setActor = function(actorId) {
   this._actor = $gameActors.actor(actorId);
   var changed = false;
   // Set to default race, if necessary
-  if(Fenrir.Races && $gameTemp._charCreationRaces.length > 0) {
+  if (Fenrir.Races && $gameTemp._charCreationRaces.length > 0) {
     var raceKey = "";
-    if(this._actor.race() && this._actor.race().key) raceKey = this._actor.race().key;
-    if($gameTemp._charCreationRaces.indexOf(raceKey) === -1) {
+    if (this._actor.race() && this._actor.race().key) {
+		raceKey = this._actor.race().key;
+	}
+    if ($gameTemp._charCreationRaces.indexOf(raceKey) === -1) {
       changed = true;
       this._actor.setRace($gameTemp._charCreationRaces[0]);
     }
   }
   // Set to default gender, if necessary
-  if(Fenrir.Gender) {
-    if(this._actor.gender() === "") {
+  if (Fenrir.Gender) {
+    if (this._actor.gender() === "") {
       changed = true;
       this._actor.setGender("male");
     }
   }
-  if(changed) this.resetActorAppearance();
-  if(this._baseHelpWindow) {
+  if (changed) {
+	  this.resetActorAppearance();
+  }
+  if (this._baseHelpWindow) {
     this._baseHelpWindow.refresh();
   }
 };
@@ -447,22 +465,22 @@ Scene_CharCreation.prototype.setActor = function(actorId) {
  */
 Scene_CharCreation.prototype.createBaseWindow = function() {
   this._baseWindow = new Window_CharCreation_Base(this._actor);
-  if(Fenrir && Fenrir.Gender && $gameTemp._charCreationDisable.indexOf("gender") === -1) {
+  if (Fenrir && Fenrir.Gender && $gameTemp._charCreationDisable.indexOf("gender") === -1) {
     this._baseWindow.setHandler("gender", this.baseCommandGender.bind(this));
   }
-  if(Fenrir && Fenrir.Races && $gameTemp._charCreationDisable.indexOf("race") === -1 &&
-    $gameTemp._charCreationRaces.length > 0) {
+  if (Fenrir && Fenrir.Races && $gameTemp._charCreationDisable.indexOf("race") === -1 &&
+		$gameTemp._charCreationRaces.length > 0) {
     this._baseWindow.setHandler("race", this.baseCommandRace.bind(this));
   }
-  if($gameTemp._charCreationClasses && $gameTemp._charCreationDisable.indexOf("class") === -1 &&
-    $gameTemp._charCreationClasses.length > 0) {
+  if ($gameTemp._charCreationClasses && $gameTemp._charCreationDisable.indexOf("class") === -1 &&
+		$gameTemp._charCreationClasses.length > 0) {
     this._baseWindow.setHandler("class", this.baseCommandClass.bind(this));
   }
-  if($gameTemp._charCreationDisable.indexOf("appearance") === -1 &&
-    $gameTemp._charCreationAppearances.length > 0) {
+  if ($gameTemp._charCreationDisable.indexOf("appearance") === -1 &&
+		$gameTemp._charCreationAppearances.length > 0) {
     this._baseWindow.setHandler("appearance", this.baseCommandAppearance.bind(this));
   }
-  if($gameTemp._charCreationDisable.indexOf("name") === -1) {
+  if ($gameTemp._charCreationDisable.indexOf("name") === -1) {
     this._baseWindow.setHandler("name", this.baseCommandName.bind(this));
   }
   this._baseWindow.setHandler("finish", this.baseCommandFinish.bind(this));
@@ -507,25 +525,25 @@ Scene_CharCreation.prototype.createPropertyWindow = function(windowClass, args) 
 Scene_CharCreation.prototype.onSelectProperty = function() {
   switch(this._propertySelectionWindow.getType()) {
     case "gender":
-    this._actor.setGender(this._propertySelectionWindow.currentSymbol());
-    this.resetActorAppearance();
-    this.closePropertyWindows();
-    break;
+		this._actor.setGender(this._propertySelectionWindow.currentSymbol());
+		this.resetActorAppearance();
+		this.closePropertyWindows();
+		break;
     case "race":
-    this._actor.setRace(this._propertySelectionWindow.currentSymbol());
-    this.resetActorAppearance();
-    this.closePropertyWindows();
-    break;
+		this._actor.setRace(this._propertySelectionWindow.currentSymbol());
+		this.resetActorAppearance();
+		this.closePropertyWindows();
+		break;
     case "class":
-    this._actor.changeClass(Number(this._propertySelectionWindow.currentSymbol()), true);
-    this.closePropertyWindows();
-    break;
+		this._actor.changeClass(Number(this._propertySelectionWindow.currentSymbol()), true);
+		this.closePropertyWindows();
+		break;
     case "appearance":
-    this._actor.setCharacterImage(this._propertySelectionWindow.currentSymbol(), 0);
-    this._actor.setFaceImage(this._propertySelectionWindow.currentSymbol(), 0);
-    this._actor.setBattlerImage(this._propertySelectionWindow.currentSymbol());
-    this.closePropertyWindows();
-    break;
+		this._actor.setCharacterImage(this._propertySelectionWindow.currentSymbol(), 0);
+		this._actor.setFaceImage(this._propertySelectionWindow.currentSymbol(), 0);
+		this._actor.setBattlerImage(this._propertySelectionWindow.currentSymbol());
+		this.closePropertyWindows();
+		break;
   }
   this._baseHelpWindow.refresh();
 };
@@ -598,13 +616,17 @@ Scene_CharCreation.prototype.closePropertyWindows = function() {
  * Resets the actor's appearance (according to things like gender)
  */
 Scene_CharCreation.prototype.resetActorAppearance = function() {
-  if($gameTemp._charCreationAppearances.length === 0) return;
+  if ($gameTemp._charCreationAppearances.length === 0) {
+	  return;
+  }
   var filterObj = $gameTemp.charCreation_CreateActorFilter(this.actor()._actorId);
   var appearance = $gameTemp.charCreation_FilterAppearances(filterObj)[0];
   this._actor.setFaceImage(appearance.value, appearance.faceIndex);
   this._actor.setCharacterImage(appearance.value, appearance.charIndex);
   this._actor.setBattlerImage(appearance.value);
-  if(this._baseHelpWindow) this._baseHelpWindow.refresh();
+  if (this._baseHelpWindow) {
+	  this._baseHelpWindow.refresh();
+  }
 };
 
 
@@ -638,7 +660,7 @@ Window_CharCreation_Base.prototype.windowWidth = function() {
  * @return (number) The font size
  */
 Window_CharCreation_Base.prototype.standardFontSize = function() {
-  return eval(Fenrir.CharCreation.fontSizeEval);
+  return Fenrir.CharCreation.fontSizeEval;
 };
 
 /**
@@ -661,19 +683,19 @@ Window_CharCreation_Base.prototype.actor = function() {
  * Creates this window's command list
  */
 Window_CharCreation_Base.prototype.makeCommandList = function() {
-  if(Fenrir && Fenrir.Gender && $gameTemp._charCreationDisable.indexOf("gender") === -1) {
+  if (Fenrir && Fenrir.Gender && $gameTemp._charCreationDisable.indexOf("gender") === -1) {
     this.addCommand("Gender", "gender");
   }
-  if(Fenrir && Fenrir.Races && $gameTemp._charCreationDisable.indexOf("race") === -1) {
-    if($gameTemp._charCreationRaces.length > 0) this.addCommand("Race", "race");
+  if (Fenrir && Fenrir.Races && $gameTemp._charCreationDisable.indexOf("race") === -1) {
+    if ($gameTemp._charCreationRaces.length > 0) this.addCommand("Race", "race");
   }
-  if($gameTemp._charCreationDisable.indexOf("class") === -1) {
-    if($gameTemp._charCreationClasses.length > 0) this.addCommand("Class", "class");
+  if ($gameTemp._charCreationDisable.indexOf("class") === -1) {
+    if ($gameTemp._charCreationClasses.length > 0) this.addCommand("Class", "class");
   }
-  if($gameTemp._charCreationDisable.indexOf("appearance") === -1) {
-    if($gameTemp._charCreationAppearances.length > 0) this.addCommand("Appearance", "appearance");
+  if ($gameTemp._charCreationDisable.indexOf("appearance") === -1) {
+    if ($gameTemp._charCreationAppearances.length > 0) this.addCommand("Appearance", "appearance");
   }
-  if($gameTemp._charCreationDisable.indexOf("name") === -1) {
+  if ($gameTemp._charCreationDisable.indexOf("name") === -1) {
     this.addCommand("Name", "name");
   }
   this.addCommand("Finish", "finish", this.isProperlyAssembled());
@@ -684,10 +706,7 @@ Window_CharCreation_Base.prototype.makeCommandList = function() {
  * @return (boolean) Whether properly assembled
  */
 Window_CharCreation_Base.prototype.isProperlyAssembled = function() {
-  if(this.actor().name() === "") {
-    return false;
-  }
-  return true;
+	return !!this.actor().name();
 };
 
 /**
@@ -713,8 +732,8 @@ Window_CharCreation_PropertyBase.prototype.constructor = Window_CharCreation_Pro
  */
 Window_CharCreation_PropertyBase.prototype.initialize = function() {
   Window_Command.prototype.initialize.call(this, 0, 0);
-  this.x = eval(Fenrir.CharCreation.propertyX);
-  this.y = eval(Fenrir.CharCreation.propertyY);
+  this.x = Fenrir.CharCreation.propertyX;
+  this.y = Fenrir.CharCreation.propertyY;
 };
 
 /**
@@ -722,7 +741,7 @@ Window_CharCreation_PropertyBase.prototype.initialize = function() {
  * @return (number) The window's calculated width
  */
 Window_CharCreation_PropertyBase.prototype.windowWidth = function() {
-  return eval(Fenrir.CharCreation.propertyWidth);
+  return Fenrir.CharCreation.propertyWidth;
 };
 
 /**
@@ -730,7 +749,7 @@ Window_CharCreation_PropertyBase.prototype.windowWidth = function() {
  * @return (number) The window's calculated height
  */
 Window_CharCreation_PropertyBase.prototype.windowHeight = function() {
-  return eval(Fenrir.CharCreation.propertyHeight);
+  return Fenrir.CharCreation.propertyHeight;
 };
 
 /**
@@ -738,7 +757,7 @@ Window_CharCreation_PropertyBase.prototype.windowHeight = function() {
  * @return (number) The font size
  */
 Window_CharCreation_PropertyBase.prototype.standardFontSize = function() {
-  return eval(Fenrir.CharCreation.fontSizeEval);
+  return Fenrir.CharCreation.fontSizeEval;
 };
 
 /**
@@ -814,6 +833,7 @@ Window_CharCreation_Race.prototype.constructor = Window_CharCreation_Race;
 /**
  * Constructor
  */
+ // DK: Not need
 Window_CharCreation_Race.prototype.initialize = function() {
   Window_CharCreation_PropertyBase.prototype.initialize.call(this);
 };
@@ -825,7 +845,9 @@ Window_CharCreation_Race.prototype.updateHelp = function() {
   Window_CharCreation_PropertyBase.prototype.updateHelp.call(this);
   for(var a = 0;a < $dataRaces.length;a++) {
     var race = $dataRaces[a];
-    if(race.key != this.commandSymbol(this.index())) continue;
+    if (race.key != this.commandSymbol(this.index())) {
+		continue;
+	}
     this._helpWindow.setText(race.text.description);
   }
 };
@@ -839,7 +861,9 @@ Window_CharCreation_Race.prototype.usesIcons = function() {
     var key = $gameTemp._charCreationRaces[a];
     for(var b = 0;b < $dataRaces.length;b++) {
       var race = $dataRaces[b];
-      if(race.icon && race.icon > 0) return true;
+      if (/*race.icon && */race.icon > 0) {
+		  return true;
+	  }
     }
   }
   return false;
@@ -850,10 +874,12 @@ Window_CharCreation_Race.prototype.usesIcons = function() {
  */
 Window_CharCreation_Race.prototype.makeCommandList = function() {
   if($gameTemp._charCreationRaces) {
-    for(var a = 0;a < $gameTemp._charCreationRaces.length;a++) {
+    for(var a = 0;a < $gameTemp._charCreationRaces.length; a++) {
       var str = $gameTemp._charCreationRaces[a];
-      for(var b = 0;b < $dataRaces.length;b++) {
-        if($dataRaces[b].key != str) continue;
+      for(var b = 0; b < $dataRaces.length; b++) {
+        if ($dataRaces[b].key != str) {
+			continue;
+		}
         this.addCommand($dataRaces[b].text.noun, str);
       }
     }
@@ -866,9 +892,11 @@ Window_CharCreation_Race.prototype.makeCommandList = function() {
  */
 Window_CharCreation_Race.prototype.getRace = function(index) {
   var key = this.commandSymbol(index);
-  for(var a = 0;a < $dataRaces.length;a++) {
+  for(var a = 0; a < $dataRaces.length; a++) {
     var race = $dataRaces[a];
-    if(race.key == key) return race;
+    if (race.key == key) {
+		return race;
+	}
   }
   return null;
 };
@@ -883,7 +911,7 @@ Window_CharCreation_Race.prototype.drawItem = function(index) {
   this.changePaintOpacity(this.isCommandEnabled(index));
   var _iconPadding = 0;
   var obj = this.getRace(index);
-  if(this.usesIcons()) {
+  if (this.usesIcons()) {
     _iconPadding = Window_Base._iconWidth;
     if(obj.icon > 0) this.drawIcon(obj.icon, rect.x, rect.y);
   }
@@ -895,7 +923,7 @@ Window_CharCreation_Race.prototype.drawItem = function(index) {
  * @return (string) Window's type
  */
 Window_CharCreation_Race.prototype.getType = function() {
-  return "race";
+	return "race";
 };
 
 
@@ -931,9 +959,11 @@ Window_CharCreation_Class.prototype.makeCommandList = function() {
  * @return (boolean) false if NO class has an icon assigned, true otherwise
  */
 Window_CharCreation_Class.prototype.usesIcons = function() {
-  for(var a = 0;a < $gameTemp._charCreationClasses.length;a++) {
+  for(var a = 0; a < $gameTemp._charCreationClasses.length; a++) {
     var obj = $dataClasses[$gameTemp._charCreationClasses[a]];
-    if(obj._icon && obj._icon > 0) return true;
+    if (obj._icon && obj._icon > 0) {
+		return true;
+	}
   }
   return false;
 };
@@ -958,7 +988,7 @@ Window_CharCreation_Class.prototype.drawItem = function(index) {
   this.changePaintOpacity(this.isCommandEnabled(index));
   var _iconPadding = 0;
   var obj = this.getClass(index);
-  if(this.usesIcons()) {
+  if (this.usesIcons()) {
     _iconPadding = Window_Base._iconWidth;
     if(obj._icon > 0) this.drawIcon(obj._icon, rect.x, rect.y);
   }
@@ -1066,10 +1096,10 @@ Window_CharCreation_PropertyHelp.prototype.constructor = Window_CharCreation_Pro
  */
 Window_CharCreation_PropertyHelp.prototype.initialize = function() {
   Window_Help.prototype.initialize.call(this, 40);
-  this.width = eval(Fenrir.CharCreation.propertyHelpWidth);
-  this.height = eval(Fenrir.CharCreation.propertyHelpHeight);
-  this.x = eval(Fenrir.CharCreation.propertyHelpX);
-  this.y = eval(Fenrir.CharCreation.propertyHelpY);
+  this.width = Fenrir.CharCreation.propertyHelpWidth;
+  this.height = Fenrir.CharCreation.propertyHelpHeight;
+  this.x = Fenrir.CharCreation.propertyHelpX;
+  this.y = Fenrir.CharCreation.propertyHelpY;
 };
 
 /**
@@ -1077,7 +1107,7 @@ Window_CharCreation_PropertyHelp.prototype.initialize = function() {
  * @return (number) The font size
  */
 Window_CharCreation_PropertyHelp.prototype.standardFontSize = function() {
-  return eval(Fenrir.CharCreation.fontSizeEval);
+  return Fenrir.CharCreation.fontSizeEval;
 };
 
 
@@ -1103,7 +1133,7 @@ Window_CharCreation_BaseHelp.prototype.initialize = function(actor) {
  * Refresh
  */
 Window_CharCreation_BaseHelp.prototype.refresh = function() {
-  if(this.contents) {
+  if (this.contents) { // this.contents creates in Window_Base.prototype.initialize - not needed
     this.contents.clear();
     this.drawEverything();
   }
@@ -1114,7 +1144,7 @@ Window_CharCreation_BaseHelp.prototype.refresh = function() {
  * @return (number) The font size
  */
 Window_CharCreation_BaseHelp.prototype.standardFontSize = function() {
-  return eval(Fenrir.CharCreation.fontSizeEval);
+  return Fenrir.CharCreation.fontSizeEval;
 };
 
 /**
@@ -1122,7 +1152,7 @@ Window_CharCreation_BaseHelp.prototype.standardFontSize = function() {
  * @return (object) The actor being edited
  */
 Window_CharCreation_BaseHelp.prototype.actor = function() {
-  return this._actor;
+	return this._actor;
 };
 
 /**
@@ -1146,9 +1176,11 @@ Window_CharCreation_BaseHelp.prototype.drawName = function() {
  * Draws the actor's class
  */
 Window_CharCreation_BaseHelp.prototype.drawClass = function() {
-  var icon = this.actor().currentClass()._icon;
-  if(icon > 0) this.drawIcon(icon, 0, this.lineHeight())
-  this.drawText(this.actor().currentClass().name, Window_Base._iconWidth, this.lineHeight(), 256 - Window_Base._iconWidth, "left");
+	var icon = this.actor().currentClass()._icon;
+	if (icon > 0) {
+	  this.drawIcon(icon, 0, this.lineHeight());
+	}
+	this.drawText(this.actor().currentClass().name, Window_Base._iconWidth, this.lineHeight(), 256 - Window_Base._iconWidth, "left");
 };
 
 /**
@@ -1164,10 +1196,12 @@ Window_CharCreation_BaseHelp.prototype.drawAppearance = function() {
  * Draws the actor's race
  */
 Window_CharCreation_BaseHelp.prototype.drawRace = function() {
-  if(Fenrir.Races) {
+  if (Fenrir.Races) {
     var race = this.actor().race();
     var icon = race.icon;
-    if(icon > 0) this.drawIcon(icon, 0, this.lineHeight() * 2);
+    if (icon > 0) {
+		this.drawIcon(icon, 0, this.lineHeight() * 2);
+	}
     this.drawText(race.text.noun, Window_Base._iconWidth, this.lineHeight() * 2, 256 - Window_Base._iconWidth, "left");
   }
 };
